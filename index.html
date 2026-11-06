@@ -219,25 +219,47 @@
 
     <!-- 4. DOAÇÕES & VEC SANTO ANDRÉ -->
     <section id="aba-doacoes" class="aba-conteudo hidden space-y-6">
-      <div class="flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border shadow-sm">
         <div>
           <h2 class="text-lg font-bold text-slate-800">Entrada de Doações & Parceria VEC</h2>
           <p class="text-xs text-slate-500">Registro de doações comunitárias, cultos e penas alternativas (Vara de Execuções Penais - Santo André)</p>
         </div>
+        <button onclick="abrirModalDoacao()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i> Nova Doação
+        </button>
       </div>
-      <div class="bg-white rounded-xl shadow-sm border overflow-hidden p-6 text-slate-500 text-sm">
-        <p><i class="fa-solid fa-info-circle text-indigo-600 mr-1"></i> Módulo de doações da ASCISA integrado ao estoque geral.</p>
+
+      <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+        <table class="w-full text-sm text-left">
+          <thead class="text-xs text-slate-500 uppercase bg-slate-100 border-b">
+            <tr>
+              <th class="p-3">Cód</th>
+              <th class="p-3">Doador / Origem</th>
+              <th class="p-3">Item / Alimento</th>
+              <th class="p-3">Quantidade</th>
+              <th class="p-3">Data</th>
+              <th class="p-3 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-doacoes">
+            <!-- Preenchido via JS -->
+          </tbody>
+        </table>
       </div>
     </section>
 
     <!-- 5. FAMÍLIAS BENEFICIÁRIAS -->
     <section id="aba-familias" class="aba-conteudo hidden space-y-6">
-      <div class="flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border shadow-sm">
         <div>
           <h2 class="text-lg font-bold text-slate-800">Mapeamento de Famílias Beneficiárias</h2>
           <p class="text-xs text-slate-500">Ficha socioassistencial e controle de carência de atendimento na ASCISA / Utinga</p>
         </div>
+        <button onclick="abrirModalFamilia()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2">
+          <i class="fa-solid fa-user-plus"></i> Nova Família
+        </button>
       </div>
+
       <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
         <table class="w-full text-sm text-left">
           <thead class="text-xs text-slate-500 uppercase bg-slate-100 border-b">
@@ -248,6 +270,7 @@
               <th class="p-3">Bairro</th>
               <th class="p-3">Membros</th>
               <th class="p-3">Última Entrega</th>
+              <th class="p-3 text-right">Ações</th>
             </tr>
           </thead>
           <tbody id="tabela-familias">
@@ -259,14 +282,31 @@
 
     <!-- 6. REGISTRO DE ENTREGAS -->
     <section id="aba-entregas" class="aba-conteudo hidden space-y-6">
-      <div class="flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border shadow-sm">
         <div>
           <h2 class="text-lg font-bold text-slate-800">Histórico de Entregas e Recibos</h2>
           <p class="text-xs text-slate-500">Registro oficial de saídas com geração de Termos de Recebimento</p>
         </div>
+        <button onclick="abrirModalEntrega()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2">
+          <i class="fa-solid fa-hand-holding-hand"></i> Registrar Entrega
+        </button>
       </div>
-      <div class="bg-white rounded-xl shadow-sm border overflow-hidden p-6 text-slate-500 text-sm">
-        <p><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Módulo de emissão de comprovantes ativo.</p>
+
+      <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+        <table class="w-full text-sm text-left">
+          <thead class="text-xs text-slate-500 uppercase bg-slate-100 border-b">
+            <tr>
+              <th class="p-3">Cód</th>
+              <th class="p-3">Família Beneficiária</th>
+              <th class="p-3">Qtd Cestas</th>
+              <th class="p-3">Data de Entrega</th>
+              <th class="p-3 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-entregas">
+            <!-- Preenchido via JS -->
+          </tbody>
+        </table>
       </div>
     </section>
 
@@ -364,7 +404,110 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT E ALGORITMO FEFO -->
+  <!-- MODAL CADASTRO DE FAMÍLIA -->
+  <div id="modal-familia" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 my-8">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="text-lg font-bold text-slate-800">Cadastrar Nova Família Beneficiária</h3>
+        <button type="button" onclick="fecharModalFamilia()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <form id="form-familia" onsubmit="salvarFamilia(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Responsável</label>
+          <input type="text" id="familia-responsavel" required placeholder="Ex: Maria da Silva" class="w-full border rounded-lg p-2 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">CPF ou NIS</label>
+            <input type="text" id="familia-cpf" required placeholder="000.000.000-00" class="w-full border rounded-lg p-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Membros na Família</label>
+            <input type="number" id="familia-membros" min="1" value="1" required class="w-full border rounded-lg p-2 text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Bairro / Comunidade</label>
+          <input type="text" id="familia-bairro" required value="Utinga" class="w-full border rounded-lg p-2 text-sm">
+        </div>
+        <div class="flex justify-end gap-2 pt-3">
+          <button type="button" onclick="fecharModalFamilia()" class="px-4 py-2 text-xs font-semibold bg-slate-200 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-lg">Salvar Família</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL REGISTRO DE DOAÇÃO -->
+  <div id="modal-doacao" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 my-8">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="text-lg font-bold text-slate-800">Registrar Nova Doação</h3>
+        <button type="button" onclick="fecharModalDoacao()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <form id="form-doacao" onsubmit="salvarDoacao(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Doador / Origem</label>
+          <input type="text" id="doacao-doador" required placeholder="Ex: Culto de Missões / VEC / Comunitário" class="w-full border rounded-lg p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Item / Alimento Doado</label>
+          <input type="text" id="doacao-item" required placeholder="Ex: Cesta Básica Fechada / Arroz 5kg" class="w-full border rounded-lg p-2 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Quantidade</label>
+            <input type="number" id="doacao-qtd" min="1" value="1" required class="w-full border rounded-lg p-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Data da Doação</label>
+            <input type="date" id="doacao-data" required class="w-full border rounded-lg p-2 text-sm">
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-3">
+          <button type="button" onclick="fecharModalDoacao()" class="px-4 py-2 text-xs font-semibold bg-slate-200 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-lg">Salvar Doação</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL REGISTRO DE ENTREGA -->
+  <div id="modal-entrega" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 my-8">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="text-lg font-bold text-slate-800">Registrar Entrega de Cesta</h3>
+        <button type="button" onclick="fecharModalEntrega()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <form id="form-entrega" onsubmit="salvarEntrega(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Família Beneficiária</label>
+          <select id="entrega-familia-id" required class="w-full border rounded-lg p-2 text-sm">
+            <!-- Opções preenchidas via JS -->
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Qtd de Cestas</label>
+            <input type="number" id="entrega-qtd" min="1" value="1" required class="w-full border rounded-lg p-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Data de Entrega</label>
+            <input type="date" id="entrega-data" required class="w-full border rounded-lg p-2 text-sm">
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-3">
+          <button type="button" onclick="fecharModalEntrega()" class="px-4 py-2 text-xs font-semibold bg-slate-200 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-emerald-600 text-white rounded-lg">Confirmar Entrega</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT E LÓGICA DO SISTEMA -->
   <script>
     const STORAGE_KEY_ESTOQUE = 'acolher_estoque';
     const STORAGE_KEY_DOACOES = 'acolher_doacoes';
@@ -387,7 +530,7 @@
 
     let html5QrCode = null;
 
-    // EVENTO DE BOTÃO VOLTAR DO ANDROID (Evita fechar o aplicativo ao fechar o modal)
+    // EVENTO DE BOTÃO VOLTAR DO ANDROID
     window.onpopstate = function(event) {
       const modalLote = document.getElementById('modal-lote');
       if (modalLote && !modalLote.classList.contains('hidden')) {
@@ -408,6 +551,7 @@
       const em10dias = new Date(hoje.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       const em25dias = new Date(hoje.getTime() + 25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       const em90dias = new Date(hoje.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const hojeData = hoje.toISOString().split('T')[0];
 
       const estoqueDemo = [
         { id: 'LOT-01', nome: 'Feijão Carioca 1kg', categoria: 'Grãos', quantidade: 30, unidade: 'kg', validade: em10dias },
@@ -422,29 +566,63 @@
         { id: 'FAM-02', responsavel: 'João Santos', cpf: '987.654.321-11', bairro: 'Utinga', membros: 3, ultimaEntrega: '2026-08-20' }
       ];
 
+      const doacoesDemo = [
+        { id: 'DOA-01', doador: 'Culto de Missões AD Utinga', item: 'Arroz 5kg e Feijão 1kg', quantidade: 15, data: hojeData }
+      ];
+
+      const entregasDemo = [
+        { id: 'ENT-01', familiaId: 'FAM-01', familiaNome: 'Maria Silva', quantidade: 1, data: '2026-09-15' }
+      ];
+
       localStorage.setItem(STORAGE_KEY_ESTOQUE, JSON.stringify(estoqueDemo));
       localStorage.setItem(STORAGE_KEY_FAMILIAS, JSON.stringify(familiasDemo));
-      localStorage.setItem(STORAGE_KEY_DOACOES, JSON.stringify([]));
-      localStorage.setItem(STORAGE_KEY_ENTREGAS, JSON.stringify([]));
+      localStorage.setItem(STORAGE_KEY_DOACOES, JSON.stringify(doacoesDemo));
+      localStorage.setItem(STORAGE_KEY_ENTREGAS, JSON.stringify(entregasDemo));
 
       atualizarInterface();
     }
 
+    // MODAIS DE LOTE
     function abrirModalLote() {
       document.getElementById('modal-lote').classList.remove('hidden');
       history.pushState({ modalAberto: true }, "");
     }
-
     function fecharModais(navegarHistorico = true) {
       pararLeitorBarcode();
       document.getElementById('modal-lote').classList.add('hidden');
-      
       if (navegarHistorico && history.state && history.state.modalAberto) {
         history.back();
       }
     }
 
-    // INICIAR LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA
+    // MODAIS DE FAMÍLIA
+    function abrirModalFamilia() { document.getElementById('modal-familia').classList.remove('hidden'); }
+    function fecharModalFamilia() { document.getElementById('modal-familia').classList.add('hidden'); }
+
+    // MODAIS DE DOAÇÃO
+    function abrirModalDoacao() { 
+      document.getElementById('doacao-data').value = new Date().toISOString().split('T')[0];
+      document.getElementById('modal-doacao').classList.remove('hidden'); 
+    }
+    function fecharModalDoacao() { document.getElementById('modal-doacao').classList.add('hidden'); }
+
+    // MODAIS DE ENTREGA
+    function abrirModalEntrega() {
+      const familias = JSON.parse(localStorage.getItem(STORAGE_KEY_FAMILIAS) || '[]');
+      if (familias.length === 0) return alert('Cadastre ao menos uma família beneficiária antes de registrar entregas!');
+      
+      const select = document.getElementById('entrega-familia-id');
+      select.innerHTML = '';
+      familias.forEach(f => {
+        select.innerHTML += `<option value="${f.id}">${f.responsavel} (CPF: ${f.cpf})</option>`;
+      });
+
+      document.getElementById('entrega-data').value = new Date().toISOString().split('T')[0];
+      document.getElementById('modal-entrega').classList.remove('hidden');
+    }
+    function fecharModalEntrega() { document.getElementById('modal-entrega').classList.add('hidden'); }
+
+    // LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA
     function iniciarLeitorBarcode() {
       document.getElementById('reader-container').classList.remove('hidden');
       if (html5QrCode) {
@@ -459,13 +637,12 @@
           pararLeitorBarcode();
           buscarProdutoPorEAN(decodedText);
         },
-        (errorMessage) => {}
-      ).catch(err => {
+        () => {}
+      ).catch(() => {
         alert("Não foi possível acessar a câmera do aparelho. Verifique as permissões de acesso no seu navegador.");
       });
     }
 
-    // DESLIGAR CÂMERA DE FORMA SEGURA
     function pararLeitorBarcode() {
       if (html5QrCode) {
         try {
@@ -588,7 +765,26 @@
             <td class="p-3">${item.validade}</td>
             <td class="p-3">${badge}</td>
             <td class="p-3 text-right">
-              <button onclick="excluirLote('${item.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-bold"><i class="fa-solid fa-trash"></i></button>
+              <button onclick="excluirLote('${item.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-bold"><i class="fa-solid fa-trash"></i> Excluir</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      // Tabela de Doações
+      const doacoes = JSON.parse(localStorage.getItem(STORAGE_KEY_DOACOES) || '[]');
+      const tabelaDoacoes = document.getElementById('tabela-doacoes');
+      tabelaDoacoes.innerHTML = '';
+      doacoes.forEach(d => {
+        tabelaDoacoes.innerHTML += `
+          <tr class="border-b hover:bg-slate-50">
+            <td class="p-3 font-mono text-xs">${d.id}</td>
+            <td class="p-3 font-semibold">${d.doador}</td>
+            <td class="p-3">${d.item}</td>
+            <td class="p-3 font-bold">${d.quantidade}</td>
+            <td class="p-3">${d.data}</td>
+            <td class="p-3 text-right">
+              <button onclick="excluirDoacao('${d.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-bold"><i class="fa-solid fa-trash"></i> Excluir</button>
             </td>
           </tr>
         `;
@@ -605,7 +801,27 @@
             <td class="p-3">${f.cpf}</td>
             <td class="p-3">${f.bairro}</td>
             <td class="p-3">${f.membros} pessoas</td>
-            <td class="p-3">${f.ultimaEntrega}</td>
+            <td class="p-3 font-medium text-indigo-700">${f.ultimaEntrega}</td>
+            <td class="p-3 text-right">
+              <button onclick="excluirFamilia('${f.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-bold"><i class="fa-solid fa-trash"></i> Excluir</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      // Tabela de Entregas
+      const tabelaEntregas = document.getElementById('tabela-entregas');
+      tabelaEntregas.innerHTML = '';
+      entregas.forEach(e => {
+        tabelaEntregas.innerHTML += `
+          <tr class="border-b hover:bg-slate-50">
+            <td class="p-3 font-mono text-xs">${e.id}</td>
+            <td class="p-3 font-semibold">${e.familiaNome}</td>
+            <td class="p-3 font-bold">${e.quantidade} cesta(s)</td>
+            <td class="p-3">${e.data}</td>
+            <td class="p-3 text-right">
+              <button onclick="excluirEntrega('${e.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-bold"><i class="fa-solid fa-trash"></i> Excluir</button>
+            </td>
           </tr>
         `;
       });
@@ -663,10 +879,9 @@
       atualizarInterface();
     }
 
+    // SALVAR E EXCLUIR LOTES
     function salvarLote(e) {
       e.preventDefault();
-      
-      // Garante o desligamento da câmera antes de atualizar o estado
       pararLeitorBarcode();
 
       const novoLote = {
@@ -692,6 +907,108 @@
         let estoque = JSON.parse(localStorage.getItem(STORAGE_KEY_ESTOQUE) || '[]');
         estoque = estoque.filter(item => item.id !== id);
         localStorage.setItem(STORAGE_KEY_ESTOQUE, JSON.stringify(estoque));
+        atualizarInterface();
+      }
+    }
+
+    // SALVAR E EXCLUIR FAMÍLIAS
+    function salvarFamilia(e) {
+      e.preventDefault();
+
+      const novaFamilia = {
+        id: 'FAM-' + Math.floor(Math.random() * 1000),
+        responsavel: document.getElementById('familia-responsavel').value,
+        cpf: document.getElementById('familia-cpf').value,
+        bairro: document.getElementById('familia-bairro').value,
+        membros: Number(document.getElementById('familia-membros').value),
+        ultimaEntrega: 'Sem entregas'
+      };
+
+      const familias = JSON.parse(localStorage.getItem(STORAGE_KEY_FAMILIAS) || '[]');
+      familias.push(novaFamilia);
+      localStorage.setItem(STORAGE_KEY_FAMILIAS, JSON.stringify(familias));
+
+      document.getElementById('form-familia').reset();
+      fecharModalFamilia();
+      atualizarInterface();
+    }
+
+    function excluirFamilia(id) {
+      if (confirm('Tem certeza que deseja remover esta família beneficiária?')) {
+        let familias = JSON.parse(localStorage.getItem(STORAGE_KEY_FAMILIAS) || '[]');
+        familias = familias.filter(f => f.id !== id);
+        localStorage.setItem(STORAGE_KEY_FAMILIAS, JSON.stringify(familias));
+        atualizarInterface();
+      }
+    }
+
+    // SALVAR E EXCLUIR DOAÇÕES
+    function salvarDoacao(e) {
+      e.preventDefault();
+
+      const novaDoacao = {
+        id: 'DOA-' + Math.floor(Math.random() * 1000),
+        doador: document.getElementById('doacao-doador').value,
+        item: document.getElementById('doacao-item').value,
+        quantidade: Number(document.getElementById('doacao-qtd').value),
+        data: document.getElementById('doacao-data').value
+      };
+
+      const doacoes = JSON.parse(localStorage.getItem(STORAGE_KEY_DOACOES) || '[]');
+      doacoes.push(novaDoacao);
+      localStorage.setItem(STORAGE_KEY_DOACOES, JSON.stringify(doacoes));
+
+      document.getElementById('form-doacao').reset();
+      fecharModalDoacao();
+      atualizarInterface();
+    }
+
+    function excluirDoacao(id) {
+      if (confirm('Tem certeza que deseja remover esta doação?')) {
+        let doacoes = JSON.parse(localStorage.getItem(STORAGE_KEY_DOACOES) || '[]');
+        doacoes = doacoes.filter(d => d.id !== id);
+        localStorage.setItem(STORAGE_KEY_DOACOES, JSON.stringify(doacoes));
+        atualizarInterface();
+      }
+    }
+
+    // SALVAR E EXCLUIR ENTREGAS
+    function salvarEntrega(e) {
+      e.preventDefault();
+
+      const familiaId = document.getElementById('entrega-familia-id').value;
+      const familias = JSON.parse(localStorage.getItem(STORAGE_KEY_FAMILIAS) || '[]');
+      const familia = familias.find(f => f.id === familiaId);
+
+      const novaEntrega = {
+        id: 'ENT-' + Math.floor(Math.random() * 1000),
+        familiaId: familiaId,
+        familiaNome: familia ? familia.responsavel : 'Desconhecida',
+        quantidade: Number(document.getElementById('entrega-qtd').value),
+        data: document.getElementById('entrega-data').value
+      };
+
+      // Atualiza histórico global de entregas
+      const entregas = JSON.parse(localStorage.getItem(STORAGE_KEY_ENTREGAS) || '[]');
+      entregas.push(novaEntrega);
+      localStorage.setItem(STORAGE_KEY_ENTREGAS, JSON.stringify(entregas));
+
+      // Atualiza data da última entrega no cadastro da família
+      if (familia) {
+        familia.ultimaEntrega = novaEntrega.data;
+        localStorage.setItem(STORAGE_KEY_FAMILIAS, JSON.stringify(familias));
+      }
+
+      document.getElementById('form-entrega').reset();
+      fecharModalEntrega();
+      atualizarInterface();
+    }
+
+    function excluirEntrega(id) {
+      if (confirm('Tem certeza que deseja remover este registro de entrega?')) {
+        let entregas = JSON.parse(localStorage.getItem(STORAGE_KEY_ENTREGAS) || '[]');
+        entregas = entregas.filter(e => e.id !== id);
+        localStorage.setItem(STORAGE_KEY_ENTREGAS, JSON.stringify(entregas));
         atualizarInterface();
       }
     }
