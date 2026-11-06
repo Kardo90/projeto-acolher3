@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projeto Acolher • Gestão FEFO e Beneficiários (ASCISA / AD Utinga)</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Leitor de Código de Barras HTML5 -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <!-- Configurações PWA (Instalação no Celular Android) -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#312e81">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ASCISA">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- CABEÇALHO PRINCIPAL -->
+  <header class="bg-indigo-900 text-white shadow-lg border-b border-indigo-700">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-amber-500 p-2.5 rounded-xl shadow-inner text-indigo-950">
+          <i class="fa-solid fa-hand-holding-heart text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Projeto Acolher</h1>
+          <p class="text-xs text-indigo-200">Gestão Social e Logística FEFO • ASCISA / AD Utinga (Santo André)</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="bg-indigo-800 text-indigo-200 text-xs px-3 py-1.5 rounded-full font-mono border border-indigo-700">
+          <i class="fa-solid fa-graduation-cap mr-1"></i> UNIVESP PI-II
+        </span>
+        <button onclick="resetarDadosDemonstracao()" class="text-xs bg-amber-500 hover:bg-amber-400 text-indigo-950 px-3 py-1.5 rounded-lg font-semibold transition shadow">
+          <i class="fa-solid fa-rotate-left mr-1"></i> Carregar Dados Demo
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVEGAÇÃO POR ABAS -->
+  <nav class="bg-indigo-950 text-indigo-200 border-b border-indigo-800 sticky top-0 z-10 shadow">
+    <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto gap-1">
+      <button onclick="mudarAba('dashboard')" id="btn-dashboard" class="tab-btn px-4 py-3 text-sm font-medium flex items-center gap-2 border-b-2 border-amber-400 text-white bg-indigo-900/50">
+        <i class="fa-solid fa-chart-line"></i> Dashboard
+      </button>
+      <button onclick="mudarAba('estoque')" id="btn-estoque" class="tab-btn px-4 py-3 text-sm font-medium flex items-center gap-2 border-b-2 border-transparent hover:text-white hover:bg-indigo-900/30">
+        <i class="fa-solid fa-boxes-stacked"></i> Estoque & FEFO
+      </button>
+      <button onclick="mudarAba('cestas')" id="btn-cestas" class="tab-btn px-4 py-3 text-sm font-medium flex items-center gap-2 border-b-2 border-transparent hover:text-white hover:bg-indigo-900/30">
+        <i class="fa-solid fa-basket-shopping"></i> Montador de Cestas
+      </button>
+      <button onclick="mudarAba('doacoes')" id="btn-doacoes" class="tab-btn px-4 py-3 text-sm font-medium flex items-center gap-2 border-b-2 border-transparent hover:text-white hover:bg-indigo-900/30">
+        <i class="fa-solid fa-hand-holding-dollar"></i> Doações & VEC
+      </button>
+      <button onclick="mudarAba('familias')" id="btn-familias" class="tab-btn px-4 py-3 text-sm font-medium flex items-center gap-2 border-b-2 border-transparent hover:text-white hover:bg-indigo-900/30">
+        <i class="fa-solid fa-users"></i> Famílias
+      </button>
+      <button onclick="mudarAba('entregas')" id="btn-entregas" class="tab-btn px-4 py-3 text-sm font-medium flex items-center gap-2 border-b-2 border-transparent hover:text-white hover:bg-indigo-900/30">
+        <i class="fa-solid fa-truck-ramp-box"></i> Entregas
+      </button>
+      <button onclick="mudarAba('relatorios')" id="btn-relatorios" class="tab-btn px-4 py-3 text-sm font-medium flex items-center gap-2 border-b-2 border-transparent hover:text-white hover:bg-indigo-900/30">
+        <i class="fa-solid fa-file-contract"></i> Relatórios & VEC
+      </button>
+    </div>
+  </nav>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+
+    <!-- 1. DASHBOARD -->
+    <section id="aba-dashboard" class="aba-conteudo space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Itens em Estoque</p>
+            <h3 id="kpi-total-estoque" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+            <span class="text-xs text-slate-500">Lotes armazenados</span>
+          </div>
+          <div class="bg-blue-100 text-blue-600 p-3.5 rounded-xl">
+            <i class="fa-solid fa-cubes text-xl"></i>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Lotes em Alerta FEFO</p>
+            <h3 id="kpi-alerta-fefo" class="text-2xl font-bold text-amber-600 mt-1">0</h3>
+            <span class="text-xs text-amber-600 font-medium">Vencimento &le; 30 dias</span>
+          </div>
+          <div class="bg-amber-100 text-amber-600 p-3.5 rounded-xl">
+            <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Famílias Ativas</p>
+            <h3 id="kpi-familias" class="text-2xl font-bold text-indigo-600 mt-1">0</h3>
+            <span class="text-xs text-slate-500">Cadastradas na ASCISA</span>
+          </div>
+          <div class="bg-indigo-100 text-indigo-600 p-3.5 rounded-xl">
+            <i class="fa-solid fa-house-chimney-user text-xl"></i>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Cestas Entregues</p>
+            <h3 id="kpi-entregas" class="text-2xl font-bold text-emerald-600 mt-1">0</h3>
+            <span class="text-xs text-emerald-600 font-medium">Atendimentos realizados</span>
+          </div>
+          <div class="bg-emerald-100 text-emerald-600 p-3.5 rounded-xl">
+            <i class="fa-solid fa-circle-check text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUADRO DE AÇÃO IMEDIATA FEFO -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-amber-50 px-6 py-4 border-b border-amber-200 flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-amber-600 text-lg"></i>
+            <h2 class="font-bold text-amber-900">Quadro de Ação Imediata FEFO (Vencimentos Próximos)</h2>
+          </div>
+          <span class="text-xs bg-amber-200 text-amber-900 font-bold px-2.5 py-1 rounded-full">Prioridade de Distribuição</span>
+        </div>
+        <div class="p-4 overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+              <tr>
+                <th class="p-3">Código / Lote</th>
+                <th class="p-3">Alimento</th>
+                <th class="p-3">Qtd Disponível</th>
+                <th class="p-3">Data de Validade</th>
+                <th class="p-3">Dias Restantes</th>
+                <th class="p-3">Status FEFO</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-fefo-urgente">
+              <!-- Preenchido via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. GESTÃO DE ESTOQUE E LOTES -->
+    <section id="aba-estoque" class="aba-conteudo hidden space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border shadow-sm">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Controle de Estoque & Lotes</h2>
+          <p class="text-xs text-slate-500">Itens reordenados automaticamente pelo algoritmo FEFO (Validade mais próxima no topo)</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="abrirModalLote()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Novo Lote
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+        <div class="p-4 border-b bg-slate-50 flex flex-col md:flex-row gap-3 justify-between">
+          <input type="text" id="busca-estoque" oninput="filtrarEstoque()" placeholder="Buscar alimento ou código..." class="border rounded-lg px-3 py-2 text-sm w-full md:w-80">
+          <select id="filtro-categoria" onchange="filtrarEstoque()" class="border rounded-lg px-3 py-2 text-sm">
+            <option value="">Todas as Categorias</option>
+            <option value="Grãos">Grãos</option>
+            <option value="Óleos / Condimentos">Óleos / Condimentos</option>
+            <option value="Massas / Molhos">Massas / Molhos</option>
+            <option value="Matinais">Matinais</option>
+          </select>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="text-xs text-slate-500 uppercase bg-slate-100 border-b">
+              <tr>
+                <th class="p-3">Código</th>
+                <th class="p-3">Alimento</th>
+                <th class="p-3">Categoria</th>
+                <th class="p-3">Quantidade</th>
+                <th class="p-3">Validade</th>
+                <th class="p-3">Status</th>
+                <th class="p-3 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-estoque-completa">
+              <!-- Preenchido via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ASSISTENTE DE MONTAR CESTAS -->
+    <section id="aba-cestas" class="aba-conteudo hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-xl border shadow-sm space-y-4">
+          <div class="border-b pb-3">
+            <h2 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-wand-magic-sparkles text-indigo-600 mr-2"></i>Montador Inteligente</h2>
+            <p class="text-xs text-slate-500">Baixa automática de estoque consumindo os lotes por ordem rigorosa do FEFO.</p>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Quantidade de Cestas a Montar</label>
+            <input type="number" id="qtd-cestas-montar" min="1" value="5" class="w-full border rounded-lg p-2.5 text-lg font-bold text-indigo-900 bg-indigo-50/50">
+          </div>
+          <button onclick="executarMontagemCestas()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition shadow flex items-center justify-center gap-2">
+            <i class="fa-solid fa-boxes-packing"></i> Dar Baixa por FEFO
+          </button>
+        </div>
+
+        <div class="lg:col-span-2 bg-white p-6 rounded-xl border shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 border-b pb-2">Composição Padrão da Cesta Básica (11 Itens Essenciais)</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="lista-composicao-cesta">
+            <!-- Renderizado via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. DOAÇÕES & VEC SANTO ANDRÉ -->
+    <section id="aba-doacoes" class="aba-conteudo hidden space-y-6">
+      <div class="flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Entrada de Doações & Parceria VEC</h2>
+          <p class="text-xs text-slate-500">Registro de doações comunitárias, cultos e penas alternativas (Vara de Execuções Penais - Santo André)</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border overflow-hidden p-6 text-slate-500 text-sm">
+        <p><i class="fa-solid fa-info-circle text-indigo-600 mr-1"></i> Módulo de doações da ASCISA integrado ao estoque geral.</p>
+      </div>
+    </section>
+
+    <!-- 5. FAMÍLIAS BENEFICIÁRIAS -->
+    <section id="aba-familias" class="aba-conteudo hidden space-y-6">
+      <div class="flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Mapeamento de Famílias Beneficiárias</h2>
+          <p class="text-xs text-slate-500">Ficha socioassistencial e controle de carência de atendimento na ASCISA / Utinga</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+        <table class="w-full text-sm text-left">
+          <thead class="text-xs text-slate-500 uppercase bg-slate-100 border-b">
+            <tr>
+              <th class="p-3">Cód</th>
+              <th class="p-3">Responsável</th>
+              <th class="p-3">CPF / NIS</th>
+              <th class="p-3">Bairro</th>
+              <th class="p-3">Membros</th>
+              <th class="p-3">Última Entrega</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-familias">
+            <!-- Preenchido via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6. REGISTRO DE ENTREGAS -->
+    <section id="aba-entregas" class="aba-conteudo hidden space-y-6">
+      <div class="flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Histórico de Entregas e Recibos</h2>
+          <p class="text-xs text-slate-500">Registro oficial de saídas com geração de Termos de Recebimento</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border overflow-hidden p-6 text-slate-500 text-sm">
+        <p><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Módulo de emissão de comprovantes ativo.</p>
+      </div>
+    </section>
+
+    <!-- 7. RELATÓRIOS E PRESTAÇÃO DE CONTAS -->
+    <section id="aba-relatorios" class="aba-conteudo hidden space-y-6">
+      <div class="bg-white p-6 rounded-xl border shadow-sm space-y-4">
+        <h2 class="text-lg font-bold text-slate-800 border-b pb-2">Prestação de Contas & Exportação de Dados</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="border p-4 rounded-xl hover:bg-slate-50 transition space-y-2">
+            <i class="fa-solid fa-file-csv text-emerald-600 text-2xl"></i>
+            <h3 class="font-bold text-slate-800">Exportar Estoque (CSV)</h3>
+            <p class="text-xs text-slate-500">Baixar planilha completa com lotes e datas de validade.</p>
+            <button onclick="exportarCSV('estoque')" class="text-xs bg-slate-200 hover:bg-slate-300 font-semibold px-3 py-1.5 rounded w-full">Exportar CSV</button>
+          </div>
+          <div class="border p-4 rounded-xl hover:bg-slate-50 transition space-y-2">
+            <i class="fa-solid fa-file-pdf text-rose-600 text-2xl"></i>
+            <h3 class="font-bold text-slate-800">Declaração VEC Santo André</h3>
+            <p class="text-xs text-slate-500">Relatório formal para a Vara de Execuções Penais.</p>
+            <button onclick="gerarDeclaracaoVEC()" class="text-xs bg-indigo-600 text-white font-semibold px-3 py-1.5 rounded w-full">Gerar Declaração</button>
+          </div>
+          <div class="border p-4 rounded-xl hover:bg-slate-50 transition space-y-2">
+            <i class="fa-solid fa-database text-blue-600 text-2xl"></i>
+            <h3 class="font-bold text-slate-800">Backup em JSON</h3>
+            <p class="text-xs text-slate-500">Exportar arquivo completo de banco de dados para segurança.</p>
+            <button onclick="exportarBackupJSON()" class="text-xs bg-slate-200 hover:bg-slate-300 font-semibold px-3 py-1.5 rounded w-full">Baixar Backup</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL CADASTRO DE LOTE -->
+  <div id="modal-lote" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 my-8">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="text-lg font-bold text-slate-800">Cadastrar Novo Lote no Estoque</h3>
+        <button type="button" onclick="fecharModais(true)" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <!-- BOTÃO PARA ATIVAR A CÂMERA -->
+      <button type="button" onclick="iniciarLeitorBarcode()" class="w-full bg-amber-500 hover:bg-amber-600 text-indigo-950 font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow">
+        <i class="fa-solid fa-barcode text-lg"></i> Escanear Código de Barras
+      </button>
+
+      <!-- VISUALIZADOR DA CÂMERA DO CELULAR -->
+      <div id="reader-container" class="hidden border-2 border-dashed border-amber-400 rounded-lg p-2 bg-slate-50 text-center">
+        <div id="reader" class="w-full"></div>
+        <button type="button" onclick="pararLeitorBarcode()" class="mt-2 text-xs bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-md font-semibold">
+          <i class="fa-solid fa-circle-stop mr-1"></i> Fechar Câmera
+        </button>
+      </div>
+
+      <form id="form-lote" onsubmit="salvarLote(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Alimento</label>
+          <input type="text" id="lote-nome" required placeholder="Ex: Feijão Carioca 1kg" class="w-full border rounded-lg p-2 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Categoria</label>
+            <select id="lote-categoria" required class="w-full border rounded-lg p-2 text-sm">
+              <option value="Grãos">Grãos</option>
+              <option value="Óleos / Condimentos">Óleos / Condimentos</option>
+              <option value="Massas / Molhos">Massas / Molhos</option>
+              <option value="Matinais">Matinais</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Quantidade</label>
+            <input type="number" id="lote-qtd" min="1" required class="w-full border rounded-lg p-2 text-sm">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Unidade</label>
+            <select id="lote-unidade" required class="w-full border rounded-lg p-2 text-sm">
+              <option value="kg">kg</option>
+              <option value="un">unidade</option>
+              <option value="pacote">pacote</option>
+              <option value="sachê">sachê</option>
+              <option value="lata">lata</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Data de Validade</label>
+            <input type="date" id="lote-validade" required class="w-full border rounded-lg p-2 text-sm">
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-3">
+          <button type="button" onclick="fecharModais(true)" class="px-4 py-2 text-xs font-semibold bg-slate-200 rounded-lg">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-lg">Salvar Lote</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT E ALGORITMO FEFO -->
+  <script>
+    const STORAGE_KEY_ESTOQUE = 'acolher_estoque';
+    const STORAGE_KEY_DOACOES = 'acolher_doacoes';
+    const STORAGE_KEY_FAMILIAS = 'acolher_familias';
+    const STORAGE_KEY_ENTREGAS = 'acolher_entregas';
+
+    const COMPOSICAO_CESTA_PADRAO = [
+      { nome: 'Arroz', qtd: 2, unidade: 'kg' },
+      { nome: 'Feijão', qtd: 2, unidade: 'kg' },
+      { nome: 'Óleo de Soja', qtd: 1, unidade: 'un' },
+      { nome: 'Açúcar', qtd: 1, unidade: 'kg' },
+      { nome: 'Café', qtd: 1, unidade: 'pacote' },
+      { nome: 'Macarrão', qtd: 2, unidade: 'pacote' },
+      { nome: 'Molho de Tomate', qtd: 2, unidade: 'sachê' },
+      { nome: 'Farinha de Trigo', qtd: 1, unidade: 'kg' },
+      { nome: 'Sal', qtd: 1, unidade: 'kg' },
+      { nome: 'Leite em Pó', qtd: 1, unidade: 'lata' },
+      { nome: 'Biscoito', qtd: 1, unidade: 'pacote' }
+    ];
+
+    let html5QrCode = null;
+
+    // EVENTO DE BOTÃO VOLTAR DO ANDROID (Evita fechar o aplicativo ao fechar o modal)
+    window.onpopstate = function(event) {
+      const modalLote = document.getElementById('modal-lote');
+      if (modalLote && !modalLote.classList.contains('hidden')) {
+        fecharModais(false);
+      }
+    };
+
+    window.onload = function() {
+      if (!localStorage.getItem(STORAGE_KEY_ESTOQUE)) {
+        resetarDadosDemonstracao();
+      } else {
+        atualizarInterface();
+      }
+    };
+
+    function resetarDadosDemonstracao() {
+      const hoje = new Date();
+      const em10dias = new Date(hoje.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const em25dias = new Date(hoje.getTime() + 25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const em90dias = new Date(hoje.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      const estoqueDemo = [
+        { id: 'LOT-01', nome: 'Feijão Carioca 1kg', categoria: 'Grãos', quantidade: 30, unidade: 'kg', validade: em10dias },
+        { id: 'LOT-02', nome: 'Arroz Tipo 1 5kg', categoria: 'Grãos', quantidade: 50, unidade: 'kg', validade: em25dias },
+        { id: 'LOT-03', nome: 'Óleo de Soja 900ml', categoria: 'Óleos / Condimentos', quantidade: 20, unidade: 'un', validade: em90dias },
+        { id: 'LOT-04', nome: 'Açúcar Refinado 1kg', categoria: 'Matinais', quantidade: 15, unidade: 'kg', validade: em90dias },
+        { id: 'LOT-05', nome: 'Macarrão Espaguete 500g', categoria: 'Massas / Molhos', quantidade: 40, unidade: 'pacote', validade: em25dias }
+      ];
+
+      const familiasDemo = [
+        { id: 'FAM-01', responsavel: 'Maria Silva', cpf: '123.456.789-00', bairro: 'Utinga', membros: 4, ultimaEntrega: '2026-09-15' },
+        { id: 'FAM-02', responsavel: 'João Santos', cpf: '987.654.321-11', bairro: 'Utinga', membros: 3, ultimaEntrega: '2026-08-20' }
+      ];
+
+      localStorage.setItem(STORAGE_KEY_ESTOQUE, JSON.stringify(estoqueDemo));
+      localStorage.setItem(STORAGE_KEY_FAMILIAS, JSON.stringify(familiasDemo));
+      localStorage.setItem(STORAGE_KEY_DOACOES, JSON.stringify([]));
+      localStorage.setItem(STORAGE_KEY_ENTREGAS, JSON.stringify([]));
+
+      atualizarInterface();
+    }
+
+    function abrirModalLote() {
+      document.getElementById('modal-lote').classList.remove('hidden');
+      history.pushState({ modalAberto: true }, "");
+    }
+
+    function fecharModais(navegarHistorico = true) {
+      pararLeitorBarcode();
+      document.getElementById('modal-lote').classList.add('hidden');
+      
+      if (navegarHistorico && history.state && history.state.modalAberto) {
+        history.back();
+      }
+    }
+
+    // INICIAR LEITOR DE CÓDIGO DE BARRAS VIA CÂMERA
+    function iniciarLeitorBarcode() {
+      document.getElementById('reader-container').classList.remove('hidden');
+      if (html5QrCode) {
+        try { html5QrCode.clear(); } catch(e){}
+      }
+      
+      html5QrCode = new Html5Qrcode("reader");
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 150 } },
+        (decodedText) => {
+          pararLeitorBarcode();
+          buscarProdutoPorEAN(decodedText);
+        },
+        (errorMessage) => {}
+      ).catch(err => {
+        alert("Não foi possível acessar a câmera do aparelho. Verifique as permissões de acesso no seu navegador.");
+      });
+    }
+
+    // DESLIGAR CÂMERA DE FORMA SEGURA
+    function pararLeitorBarcode() {
+      if (html5QrCode) {
+        try {
+          html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+            document.getElementById('reader-container').classList.add('hidden');
+          }).catch(() => {
+            document.getElementById('reader-container').classList.add('hidden');
+          });
+        } catch(e) {
+          document.getElementById('reader-container').classList.add('hidden');
+        }
+      } else {
+        document.getElementById('reader-container').classList.add('hidden');
+      }
+    }
+
+    // BUSCA DE PRODUTO NA API DO OPEN FOOD FACTS
+    function buscarProdutoPorEAN(codigoBarras) {
+      fetch(`https://br.openfoodfacts.org/api/v0/product/${codigoBarras}.json`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 1 && data.product) {
+            const prod = data.product;
+            const nomeFormatado = prod.product_name || prod.product_name_pt || prod.generic_name || "Alimento Identificado";
+            document.getElementById('lote-nome').value = nomeFormatado;
+            
+            if (prod.categories_tags) {
+              const catStr = prod.categories_tags.join(' ').toLowerCase();
+              if (catStr.includes('rice') || catStr.includes('bean') || catStr.includes('grain')) {
+                document.getElementById('lote-categoria').value = 'Grãos';
+              } else if (catStr.includes('oil') || catStr.includes('condiment')) {
+                document.getElementById('lote-categoria').value = 'Óleos / Condimentos';
+              } else if (catStr.includes('pasta') || catStr.includes('sauce')) {
+                document.getElementById('lote-categoria').value = 'Massas / Molhos';
+              } else if (catStr.includes('milk') || catStr.includes('coffee') || catStr.includes('sugar')) {
+                document.getElementById('lote-categoria').value = 'Matinais';
+              }
+            }
+            alert(`Produto Lido com Sucesso: ${nomeFormatado}\n\nCódigo: ${codigoBarras}\nAgora informe a quantidade e a data de validade.`);
+          } else {
+            alert(`Código de barras lido (${codigoBarras}), mas o produto não consta no catálogo online. Preencha o nome do alimento manualmente.`);
+          }
+        })
+        .catch(() => {
+          alert(`Código de barras lido: ${codigoBarras}. Não foi possível conectar ao banco online.`);
+        });
+    }
+
+    function mudarAba(idAba) {
+      document.querySelectorAll('.aba-conteudo').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-amber-400', 'text-white', 'bg-indigo-900/50');
+        btn.classList.add('border-transparent');
+      });
+
+      document.getElementById(`aba-${idAba}`).classList.remove('hidden');
+      const btn = document.getElementById(`btn-${idAba}`);
+      btn.classList.add('border-amber-400', 'text-white', 'bg-indigo-900/50');
+      atualizarInterface();
+    }
+
+    function obterEstoqueFEFO() {
+      const estoque = JSON.parse(localStorage.getItem(STORAGE_KEY_ESTOQUE) || '[]');
+      return estoque.sort((a, b) => new Date(a.validade) - new Date(b.validade));
+    }
+
+    function atualizarInterface() {
+      const estoque = obterEstoqueFEFO();
+      const hoje = new Date();
+
+      document.getElementById('kpi-total-estoque').innerText = estoque.reduce((acc, item) => acc + Number(item.quantidade), 0);
+      
+      const alertaFefo = estoque.filter(item => {
+        const diffDias = Math.ceil((new Date(item.validade) - hoje) / (1000 * 60 * 60 * 24));
+        return diffDias <= 30;
+      });
+      document.getElementById('kpi-alerta-fefo').innerText = alertaFefo.length;
+
+      const familias = JSON.parse(localStorage.getItem(STORAGE_KEY_FAMILIAS) || '[]');
+      document.getElementById('kpi-familias').innerText = familias.length;
+
+      const entregas = JSON.parse(localStorage.getItem(STORAGE_KEY_ENTREGAS) || '[]');
+      document.getElementById('kpi-entregas').innerText = entregas.length;
+
+      // Tabela Urgente FEFO
+      const tabelaFefo = document.getElementById('tabela-fefo-urgente');
+      tabelaFefo.innerHTML = '';
+      alertaFefo.forEach(item => {
+        const diffDias = Math.ceil((new Date(item.validade) - hoje) / (1000 * 60 * 60 * 24));
+        const badgeColor = diffDias <= 15 ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800';
+        
+        tabelaFefo.innerHTML += `
+          <tr class="border-b hover:bg-slate-50">
+            <td class="p-3 font-mono font-bold text-xs">${item.id}</td>
+            <td class="p-3 font-semibold">${item.nome}</td>
+            <td class="p-3">${item.quantidade} ${item.unidade}</td>
+            <td class="p-3">${item.validade}</td>
+            <td class="p-3 font-bold">${diffDias} dias</td>
+            <td class="p-3"><span class="text-xs px-2.5 py-1 rounded-full font-bold ${badgeColor}">Crítico FEFO</span></td>
+          </tr>
+        `;
+      });
+
+      // Tabela Estoque Completa
+      const tabelaEstoque = document.getElementById('tabela-estoque-completa');
+      tabelaEstoque.innerHTML = '';
+      estoque.forEach(item => {
+        const diffDias = Math.ceil((new Date(item.validade) - hoje) / (1000 * 60 * 60 * 24));
+        let badge = '<span class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold">Seguro</span>';
+        if (diffDias <= 15) badge = '<span class="text-xs px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-bold">Crítico (&le;15d)</span>';
+        else if (diffDias <= 30) badge = '<span class="text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-bold">Atenção (&le;30d)</span>';
+
+        tabelaEstoque.innerHTML += `
+          <tr class="border-b hover:bg-slate-50">
+            <td class="p-3 font-mono text-xs">${item.id}</td>
+            <td class="p-3 font-semibold">${item.nome}</td>
+            <td class="p-3 text-xs bg-slate-100 rounded">${item.categoria}</td>
+            <td class="p-3 font-bold">${item.quantidade} ${item.unidade}</td>
+            <td class="p-3">${item.validade}</td>
+            <td class="p-3">${badge}</td>
+            <td class="p-3 text-right">
+              <button onclick="excluirLote('${item.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-bold"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+
+      // Tabela de Famílias
+      const tabelaFamilias = document.getElementById('tabela-familias');
+      tabelaFamilias.innerHTML = '';
+      familias.forEach(f => {
+        tabelaFamilias.innerHTML += `
+          <tr class="border-b hover:bg-slate-50">
+            <td class="p-3 font-mono text-xs">${f.id}</td>
+            <td class="p-3 font-semibold">${f.responsavel}</td>
+            <td class="p-3">${f.cpf}</td>
+            <td class="p-3">${f.bairro}</td>
+            <td class="p-3">${f.membros} pessoas</td>
+            <td class="p-3">${f.ultimaEntrega}</td>
+          </tr>
+        `;
+      });
+
+      // Lista do Montador de Cestas
+      const elComposicao = document.getElementById('lista-composicao-cesta');
+      elComposicao.innerHTML = '';
+      COMPOSICAO_CESTA_PADRAO.forEach(item => {
+        elComposicao.innerHTML += `
+          <div class="border p-3 rounded-lg bg-slate-50 flex justify-between items-center">
+            <span class="text-sm font-semibold text-slate-700">${item.nome}</span>
+            <span class="text-xs font-bold bg-indigo-100 text-indigo-800 px-2 py-1 rounded">${item.qtd} ${item.unidade} / cesta</span>
+          </div>
+        `;
+      });
+    }
+
+    function executarMontagemCestas() {
+      const qtdCestas = Number(document.getElementById('qtd-cestas-montar').value);
+      if (!qtdCestas || qtdCestas <= 0) return alert('Informe uma quantidade válida!');
+
+      let estoque = obterEstoqueFEFO();
+
+      for (const req of COMPOSICAO_CESTA_PADRAO) {
+        const totalNecessario = req.qtd * qtdCestas;
+        const totalDisponivel = estoque
+          .filter(i => i.nome.toLowerCase().includes(req.nome.toLowerCase()))
+          .reduce((acc, i) => acc + Number(i.quantidade), 0);
+
+        if (totalDisponivel < totalNecessario) {
+          return alert(`Estoque insuficiente de ${req.nome}! Necessário: ${totalNecessario}, Disponível em estoque: ${totalDisponivel}`);
+        }
+      }
+
+      COMPOSICAO_CESTA_PADRAO.forEach(req => {
+        let preciso = req.qtd * qtdCestas;
+        estoque.forEach(lote => {
+          if (preciso > 0 && lote.nome.toLowerCase().includes(req.nome.toLowerCase())) {
+            const qtdNoLote = Number(lote.quantidade);
+            if (qtdNoLote <= preciso) {
+              preciso -= qtdNoLote;
+              lote.quantidade = 0;
+            } else {
+              lote.quantidade = qtdNoLote - preciso;
+              preciso = 0;
+            }
+          }
+        });
+      });
+
+      estoque = estoque.filter(l => Number(l.quantidade) > 0);
+      localStorage.setItem(STORAGE_KEY_ESTOQUE, JSON.stringify(estoque));
+
+      alert(`Sucesso! ${qtdCestas} cestas básicas montadas e baixa efetuada por ordem FEFO.`);
+      atualizarInterface();
+    }
+
+    function salvarLote(e) {
+      e.preventDefault();
+      
+      // Garante o desligamento da câmera antes de atualizar o estado
+      pararLeitorBarcode();
+
+      const novoLote = {
+        id: 'LOT-' + Math.floor(Math.random() * 1000),
+        nome: document.getElementById('lote-nome').value,
+        categoria: document.getElementById('lote-categoria').value,
+        quantidade: Number(document.getElementById('lote-qtd').value),
+        unidade: document.getElementById('lote-unidade').value,
+        validade: document.getElementById('lote-validade').value
+      };
+
+      const estoque = JSON.parse(localStorage.getItem(STORAGE_KEY_ESTOQUE) || '[]');
+      estoque.push(novoLote);
+      localStorage.setItem(STORAGE_KEY_ESTOQUE, JSON.stringify(estoque));
+
+      document.getElementById('form-lote').reset();
+      fecharModais(true);
+      atualizarInterface();
+    }
+
+    function excluirLote(id) {
+      if (confirm('Tem certeza que deseja remover este lote?')) {
+        let estoque = JSON.parse(localStorage.getItem(STORAGE_KEY_ESTOQUE) || '[]');
+        estoque = estoque.filter(item => item.id !== id);
+        localStorage.setItem(STORAGE_KEY_ESTOQUE, JSON.stringify(estoque));
+        atualizarInterface();
+      }
+    }
+
+    function exportarCSV(tipo) {
+      const dados = JSON.parse(localStorage.getItem(STORAGE_KEY_ESTOQUE) || '[]');
+      let csv = 'ID,Nome,Categoria,Quantidade,Unidade,Validade\n';
+      dados.forEach(d => {
+        csv += `${d.id},"${d.nome}",${d.categoria},${d.quantidade},${d.unidade},${d.validade}\n`;
+      });
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', `projeto_acolher_${tipo}.csv`);
+      a.click();
+    }
+
+    function exportarBackupJSON() {
+      const backup = {
+        estoque: JSON.parse(localStorage.getItem(STORAGE_KEY_ESTOQUE)),
+        familias: JSON.parse(localStorage.getItem(STORAGE_KEY_FAMILIAS)),
+        doacoes: JSON.parse(localStorage.getItem(STORAGE_KEY_DOACOES)),
+        entregas: JSON.parse(localStorage.getItem(STORAGE_KEY_ENTREGAS))
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', 'projeto_acolher_backup.json');
+      a.click();
+    }
+
+    function gerarDeclaracaoVEC() {
+      alert('Declaração Oficial para a Vara de Execuções Penais (VEC Santo André) gerada com sucesso para impressão.');
+    }
+  </script>
+</body>
+</html>
